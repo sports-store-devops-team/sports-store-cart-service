@@ -55,8 +55,10 @@ def test_get_cart_requires_token(client):
 
 
 def test_add_item_creates_snapshot(client, auth_headers):
-    with patch("routes.cart.carts_collection") as mock_col, \
-         patch("routes.cart.catalog_client") as mock_catalog:
+    with (
+        patch("routes.cart.carts_collection") as mock_col,
+        patch("routes.cart.catalog_client") as mock_catalog,
+    ):
         mock_col.find_one = AsyncMock(return_value=None)
         mock_col.update_one = AsyncMock()
         mock_catalog.get_variant = AsyncMock(return_value=VARIANT_SNAPSHOT.copy())
@@ -75,8 +77,10 @@ def test_add_item_creates_snapshot(client, auth_headers):
 
 
 def test_add_same_sku_merges_quantity(client, auth_headers):
-    with patch("routes.cart.carts_collection") as mock_col, \
-         patch("routes.cart.catalog_client") as mock_catalog:
+    with (
+        patch("routes.cart.carts_collection") as mock_col,
+        patch("routes.cart.catalog_client") as mock_catalog,
+    ):
         mock_col.find_one = AsyncMock(return_value=stored_cart(quantity=2))
         mock_col.update_one = AsyncMock()
         mock_catalog.get_variant = AsyncMock(return_value=VARIANT_SNAPSHOT.copy())
@@ -92,8 +96,10 @@ def test_add_same_sku_merges_quantity(client, auth_headers):
 
 def test_add_item_insufficient_stock_409(client, auth_headers):
     low_stock = dict(VARIANT_SNAPSHOT, stock_quantity=1)
-    with patch("routes.cart.carts_collection") as mock_col, \
-         patch("routes.cart.catalog_client") as mock_catalog:
+    with (
+        patch("routes.cart.carts_collection") as mock_col,
+        patch("routes.cart.catalog_client") as mock_catalog,
+    ):
         mock_col.find_one = AsyncMock(return_value=None)
         mock_catalog.get_variant = AsyncMock(return_value=low_stock)
         response = client.post(
@@ -149,9 +155,7 @@ def test_remove_item(client, auth_headers):
     with patch("routes.cart.carts_collection") as mock_col:
         mock_col.find_one = AsyncMock(return_value=stored_cart(quantity=2))
         mock_col.update_one = AsyncMock()
-        response = client.delete(
-            "/api/cart/items/VR-BLK-42", headers=auth_headers
-        )
+        response = client.delete("/api/cart/items/VR-BLK-42", headers=auth_headers)
 
     assert response.status_code == 200
     assert response.json() == {"items": [], "subtotal": 0}
